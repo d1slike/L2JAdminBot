@@ -5,7 +5,7 @@ package ru.disdev;
  */
 public class Cfg {
     public static final String BOT_NAME = "l2admin_bot";
-    public static final String TOKEN = "188163859:AAGDLDMFzt7ac5vTd__IIvoHDSIFGTZknXw";
-    public static int GS_PORT = 7777;
-    public static String GS_HOST = "....";
+    public static final String TOKEN = "239385413:AAGOMo93kh_4yK-llRZJRhSKsX28JdcClMA";
+    public static int BOT_PORT = 7777;
+    public static String BOT_HOST = "127.0.0.1";
 }
