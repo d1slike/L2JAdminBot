@@ -18,8 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.Cfg;
 
-import java.nio.charset.Charset;
-
 /**
  * Created by DisDev on 04.05.2016.
  */
@@ -49,8 +47,8 @@ public class GSCommunicator {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             channelPipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                             channelPipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                            channelPipeline.addLast(new StringEncoder(Charset.forName("UTF-8")));
-                            channelPipeline.addLast(new StringDecoder(Charset.forName("UTF-8")));
+                            channelPipeline.addLast(new StringEncoder());
+                            channelPipeline.addLast(new StringDecoder());
                             channelPipeline.addLast(messageHandler);
                         }
                     });

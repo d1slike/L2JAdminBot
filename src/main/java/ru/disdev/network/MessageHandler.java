@@ -32,9 +32,11 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
         }
         ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(
                 (GenericFutureListener<Future<Channel>>) future -> {
-                    activeChannel = future.getNow();
+                    activeChannel = future.get();
+                    ctx.writeAndFlush("hello");
                     LOGGER.info("Successfully connected to " + activeChannel.remoteAddress());
                 });
+        //activeChannel = ctx.channel();
     }
 
     @Override
@@ -52,7 +54,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
 
     public void writeMessage(String message) {
         if (activeChannel != null)
-            activeChannel.writeAndFlush(message);
+            activeChannel.writeAndFlush(message + "\n");
     }
 
 

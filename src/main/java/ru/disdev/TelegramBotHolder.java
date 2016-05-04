@@ -14,7 +14,7 @@ public class TelegramBotHolder {
     public static void main(String... args) {
         TelegramBotsApi botsApi = new TelegramBotsApi();
         GSCommunicator communicator = new GSCommunicator();
-        l2JAdminBot = new L2JAdminBot(Cfg.BOT_NAME, Cfg.TOKEN, communicator);
+        l2JAdminBot = new L2JAdminBot(communicator);
         try {
             botsApi.registerBot(l2JAdminBot);
         } catch (TelegramApiException e) {

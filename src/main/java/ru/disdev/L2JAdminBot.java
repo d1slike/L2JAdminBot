@@ -19,16 +19,12 @@ public class L2JAdminBot extends TelegramLongPollingBot {
 
     private static final Logger LOGGER = LogManager.getLogger(L2JAdminBot.class);
 
-    private final String botToken;
-    private final String botUsername;
     private final AtomicLong lastMessageChatId;
     private GSCommunicator communicator;
 
-    public L2JAdminBot(final String botToken, final String botUsername, final GSCommunicator communicator) {
-        this.botToken = botToken;
-        this.botUsername = botUsername;
+    public L2JAdminBot(final GSCommunicator communicator) {
         lastMessageChatId = new AtomicLong(-1);
-        this.communicator = new GSCommunicator();
+        this.communicator = communicator;
     }
 
 
@@ -72,11 +68,11 @@ public class L2JAdminBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return botUsername;
+        return Cfg.BOT_NAME;
     }
 
     @Override
     public String getBotToken() {
-        return botToken;
+        return Cfg.TOKEN;
     }
 }
