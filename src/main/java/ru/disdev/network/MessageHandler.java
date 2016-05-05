@@ -9,22 +9,24 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.disdev.network.pojo.MessagePacket;
+import ru.disdev.Cfg;
+import ru.disdev.TelegramBotHolder;
+import ru.disdev.network.objects.MessagePacket;
 
 
 /**
  * Created by DisDev on 04.05.2016.
  */
 @ChannelHandler.Sharable
-public class MessageHandler extends SimpleChannelInboundHandler<String> {
+public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
     private static final Logger LOGGER = LogManager.getLogger(MessageHandler.class);
 
     private Channel activeChannel;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, String message) throws Exception {
-
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, MessagePacket packet) throws Exception {
+        TelegramBotHolder.getL2JAdminBot().sendMessageToUser(packet.getChatId(), packet.getMessage());
     }
 
     @Override
@@ -37,8 +39,8 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
 
         String remoteAddress = ctx.channel().remoteAddress().toString();
 
-        /*if (!remoteAddress.equals(Cfg.GS_ADRESS)) {
-            LOGGER.warn(remoteAddress + " trying to connect to bot server. Connection drop.");
+        /*if (!remoteAddress.equals(Cfg.GS_ADDRESS)) {
+            LOGGER.warn(remoteAddress + " try to connect to bot server. Connection drop.");
             ctx.close();
             return;
         }*/
@@ -48,7 +50,6 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
                     activeChannel = future.get();
                     LOGGER.info("Successfully connected to " + remoteAddress);
                 });
-        //activeChannel = ctx.channel();
     }
 
     @Override
@@ -63,6 +64,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         LOGGER.warn("Game server " + ctx.channel().remoteAddress() + " was shutdown.");
+        TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warning! Game server was shutdown!");
         activeChannel = null;
     }
 
