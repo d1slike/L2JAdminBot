@@ -1,4 +1,4 @@
-package ru.disdev.network.pojo;
+package gs.side.network.objects;
 
 import java.io.UnsupportedEncodingException;
 
@@ -6,12 +6,12 @@ import java.io.UnsupportedEncodingException;
  * Created by DisDev on 05.05.2016.
  */
 public class MessagePacket {
-    private final long userId;
+    private final long chatId;
     private final String message;
     private byte[] messageInByte = {};
 
-    public MessagePacket(long userId, String message) {
-        this.userId = userId;
+    public MessagePacket(long chatId, String message) {
+        this.chatId = chatId;
         this.message = message;
         try {
             messageInByte = message.getBytes("UTF-8");
@@ -20,8 +20,8 @@ public class MessagePacket {
         }
     }
 
-    public long getUserId() {
-        return userId;
+    public long getChatId() {
+        return chatId;
     }
 
     public String getMessage() {
@@ -32,12 +32,8 @@ public class MessagePacket {
         return messageInByte;
     }
 
-    public int byteSize() {
-        return Long.BYTES + messageInByte.length;
-    }
-
     @Override
     public String toString() {
-        return userId + ": " + message;
+        return chatId + ": " + message;
     }
 }

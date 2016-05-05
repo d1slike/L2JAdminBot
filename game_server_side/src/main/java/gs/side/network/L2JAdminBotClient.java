@@ -1,4 +1,4 @@
-package network;
+package gs.side.network;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -10,8 +10,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import network.objects.MessageDecoder;
-import network.objects.MessageEncoder;
+import gs.side.network.objects.MessageDecoder;
+import gs.side.network.objects.MessageEncoder;
 
 /**
  * Created by Admin on 04.05.2016.
@@ -31,24 +31,12 @@ public class L2JAdminBotClient {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline pipeline = socketChannel.pipeline();
-
-                            // Add SSL handler first to encrypt and decrypt everything.
-                            // In this example, we use a bogus certificate in the server side
-                            // and accept any invalid certificates in the client side.
-                            // You will need something more complicated to identify both
-                            // and server in the real world.
-                            pipeline.addLast(sslCtx.newHandler(socketChannel.alloc(), "127.0.0.1", 7777));
-
-                            // On top of the SSL handler, add the text line codec.
-                            /*pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                            pipeline.addLast(new StringDecoder());
-                            pipeline.addLast(new StringEncoder());*/
-
-                            // and then business logic.
+                            //todo check ssl
+                            pipeline.addLast(sslCtx.newHandler(socketChannel.alloc(), "127.0.0.1", 9191));
                             pipeline.addLast(new MessageEncoder(), new MessageDecoder(), new BotServerMessageHandler());
                         }
                     });
-            bootstrap.connect("127.0.0.1", 7777).sync();
+            bootstrap.connect("127.0.0.1", 9191).sync();
         } catch (Exception ex) {
 
         }
