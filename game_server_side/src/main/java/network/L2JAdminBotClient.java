@@ -7,13 +7,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import network.objects.MessageDecoder;
+import network.objects.MessageEncoder;
 
 /**
  * Created by Admin on 04.05.2016.
@@ -42,12 +40,12 @@ public class L2JAdminBotClient {
                             pipeline.addLast(sslCtx.newHandler(socketChannel.alloc(), "127.0.0.1", 7777));
 
                             // On top of the SSL handler, add the text line codec.
-                            pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+                            /*pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
                             pipeline.addLast(new StringDecoder());
-                            pipeline.addLast(new StringEncoder());
+                            pipeline.addLast(new StringEncoder());*/
 
                             // and then business logic.
-                            pipeline.addLast(new BotServerMessageHandler());
+                            pipeline.addLast(new MessageEncoder(), new MessageDecoder(), new BotServerMessageHandler());
                         }
                     });
             bootstrap.connect("127.0.0.1", 7777).sync();

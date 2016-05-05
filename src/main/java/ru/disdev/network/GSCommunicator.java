@@ -7,16 +7,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.Cfg;
+import ru.disdev.network.pojo.MessageDecoder;
+import ru.disdev.network.pojo.MessageEncoder;
+import ru.disdev.network.pojo.MessagePacket;
 
 /**
  * Created by DisDev on 04.05.2016.
@@ -46,10 +45,10 @@ public class GSCommunicator {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             channelPipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
-                            channelPipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                            channelPipeline.addLast(new StringEncoder());
-                            channelPipeline.addLast(new StringDecoder());
-                            channelPipeline.addLast(messageHandler);
+                            //channelPipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+                            //channelPipeline.addLast(new StringEncoder());
+                            //channelPipeline.addLast(new StringDecoder());
+                            channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), messageHandler);
                         }
                     });
 
@@ -64,14 +63,16 @@ public class GSCommunicator {
         workerGroup.shutdownGracefully();
     }
 
-    public void sendMessageToGameServer(String command) {
-        messageHandler.writeMessage(command);
+    public void sendMessageToGameServer(MessagePacket messagePacket) {
+        messageHandler.writeMessage(messagePacket);
     }
 
     public void start() {
-        LOGGER.info("BotServer is up. Listening gameserver...");
         try {
-            serverBootstrap.bind(Cfg.BOT_HOST, Cfg.BOT_PORT).sync().channel().closeFuture().sync();
+            serverBootstrap.bind(Cfg.BOT_HOST, Cfg.BOT_PORT).addListener(future -> {
+                if (future.cause() == null)
+                    LOGGER.info("BotServer is up. Listening gameserver...");
+            }).sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

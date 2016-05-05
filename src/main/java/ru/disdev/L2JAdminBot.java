@@ -9,6 +9,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import ru.disdev.network.GSCommunicator;
+import ru.disdev.network.pojo.MessagePacket;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,7 +39,7 @@ public class L2JAdminBot extends TelegramLongPollingBot {
             lastMessageChatId.set(message.getChatId());
             String command = message.getText().substring(1);
             User user = message.getFrom();
-            LOGGER.info(String.format("Message(%s) received from user(%s %s) with id %s",
+            LOGGER.info(String.format("MessagePacket(%s) received from user(%s %s) with id %s",
                     message.getText(),
                     user.getFirstName(),
                     user.getLastName(),
@@ -46,7 +47,7 @@ public class L2JAdminBot extends TelegramLongPollingBot {
                     ));
 
             if (communicator != null)
-                communicator.sendMessageToGameServer(command);
+                communicator.sendMessageToGameServer(new MessagePacket(user.getId(), command));
             /*RequestHolder.getInstance().get(command).ifPresent(abstractRequest -> {
                 String result = abstractRequest.execute(command);
                 sendMessage(message.getChatId(), result);
@@ -54,7 +55,7 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(long userId, String message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(lastMessageChatId.get() + "");
         sendMessage.enableMarkdown(true);
