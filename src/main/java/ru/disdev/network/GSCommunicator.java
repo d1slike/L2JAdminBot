@@ -13,9 +13,10 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.Cfg;
-import ru.disdev.network.pojo.MessageDecoder;
-import ru.disdev.network.pojo.MessageEncoder;
-import ru.disdev.network.pojo.MessagePacket;
+import ru.disdev.network.objects.MessageDecoder;
+import ru.disdev.network.objects.MessageEncoder;
+import ru.disdev.network.objects.MessagePacket;
+
 
 /**
  * Created by DisDev on 04.05.2016.
@@ -45,9 +46,6 @@ public class GSCommunicator {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             channelPipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
-                            //channelPipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                            //channelPipeline.addLast(new StringEncoder());
-                            //channelPipeline.addLast(new StringDecoder());
                             channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), messageHandler);
                         }
                     });
