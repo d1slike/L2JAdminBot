@@ -1,4 +1,4 @@
-package network.objects;
+package ru.disdev.network.objects;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,6 +11,6 @@ public class MessageEncoder extends MessageToByteEncoder<MessagePacket> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, MessagePacket msg, ByteBuf out) throws Exception {
-        out.writeLong(msg.getUserId()).writeBytes(msg.getMessageInByte());
+        out.writeLong(msg.getChatId()).writeBytes(msg.getMessageInByte());
     }
 }
