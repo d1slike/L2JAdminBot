@@ -1,0 +1,1 @@
+Copy this dir to C:\Users\user_name\.m2\repository

@@ -9,7 +9,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.disdev.Cfg;
 import ru.disdev.TelegramBotHolder;
 import ru.disdev.network.objects.MessagePacket;
 
@@ -39,7 +38,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
         String remoteAddress = ctx.channel().remoteAddress().toString();
 
-        /*if (!remoteAddress.equals(Cfg.GS_ADDRESS)) {
+        /*if (!remoteAddress.equals(Config.GS_ADDRESS)) {
             LOGGER.warn(remoteAddress + " try to connect to bot server. Connection drop.");
             ctx.close();
             return;

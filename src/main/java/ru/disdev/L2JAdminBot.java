@@ -68,7 +68,7 @@ public class L2JAdminBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return Cfg.BOT_NAME;
+        return Config.BOT_NAME;
     }
 
     public void sendMessageToUser(long chatId, String message) {
@@ -79,15 +79,15 @@ public class L2JAdminBot extends TelegramLongPollingBot {
     }
 
     private boolean accept(int userId) {
-        for (int i = 0; i < Cfg.USERS_IDS.length; i++)
-            if (userId == Cfg.USERS_IDS[i])
+        for (int i = 0; i < Config.USERS_IDS.length; i++)
+            if (userId == Config.USERS_IDS[i])
                 return true;
         return false;
     }
 
     @Override
     public String getBotToken() {
-        return Cfg.TOKEN;
+        return Config.TOKEN;
     }
 
     public void sendMessageToAllActiveUser(String message) {

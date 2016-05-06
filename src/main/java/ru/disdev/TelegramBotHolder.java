@@ -12,6 +12,7 @@ public class TelegramBotHolder {
     private static L2JAdminBot l2JAdminBot;
 
     public static void main(String... args) {
+        Config.load();
         TelegramBotsApi botsApi = new TelegramBotsApi();
         GSCommunicator communicator = new GSCommunicator();
         l2JAdminBot = new L2JAdminBot(communicator);

@@ -12,7 +12,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.disdev.Cfg;
+import ru.disdev.Config;
 import ru.disdev.network.objects.MessageDecoder;
 import ru.disdev.network.objects.MessageEncoder;
 import ru.disdev.network.objects.MessagePacket;
@@ -67,7 +67,7 @@ public class GSCommunicator {
 
     public void start() {
         try {
-            serverBootstrap.bind(Cfg.BOT_HOST, Cfg.BOT_PORT).addListener(future -> {
+            serverBootstrap.bind(Config.BOT_HOST, Config.BOT_PORT).addListener(future -> {
                 if (future.cause() == null)
                     LOGGER.info("BotServer is up. Listening gameserver...");
             }).sync();
