@@ -15,8 +15,8 @@ public class Config {
     public static String TOKEN = "";
     @Cfg("BotServerPort")
     public static int BOT_PORT = 9191;
-    @Cfg("BotServerHost")
-    public static String BOT_HOST = "127.0.0.1";
+    //@Cfg("BotServerHost")
+    //public static String BOT_HOST = "127.0.0.1";
     @Cfg(value = "AllowedUsersList", splitter = ",")
     public static int[] USERS_IDS = {};
 

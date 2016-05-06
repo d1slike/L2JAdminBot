@@ -66,13 +66,12 @@ public class GSCommunicator {
     }
 
     public void start() {
-        try {
-            serverBootstrap.bind(Config.BOT_HOST, Config.BOT_PORT).addListener(future -> {
-                if (future.cause() == null)
-                    LOGGER.info("BotServer is up. Listening gameserver...");
-            }).sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //InetSocketAddress address = new InetSocketAddress(Config.BOT_HOST, Config.BOT_PORT);
+        serverBootstrap.bind(Config.BOT_PORT).addListener(future -> {
+            if (future.cause() == null)
+                LOGGER.info("BotServer is up. Listening gameserver...");
+            else
+                LOGGER.error("Error while binding bot server", future.cause());
+        });
     }
 }

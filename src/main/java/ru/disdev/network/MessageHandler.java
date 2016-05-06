@@ -26,20 +26,21 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, MessagePacket packet) throws Exception {
         TelegramBotHolder.getL2JAdminBot().sendMessageToUser(packet.getChatId(), packet.getMessage());
+        LOGGER.info(String.format("Message(%s) received from gs(%s)", packet, channelHandlerContext.channel().localAddress()));
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         if (activeChannel != null) {
-            LOGGER.warn(ctx.channel().remoteAddress() + " trying to connect. But handler already has active channel " + activeChannel.localAddress());
+            LOGGER.warn(ctx.channel().localAddress() + " trying to connect. But handler already has active channel " + activeChannel.localAddress());
             ctx.close();
             return;
         }
 
-        String remoteAddress = ctx.channel().remoteAddress().toString();
+        String adress = ctx.channel().localAddress().toString();
 
-        /*if (!remoteAddress.equals(Config.GS_ADDRESS)) {
-            LOGGER.warn(remoteAddress + " try to connect to bot server. Connection drop.");
+        /*if (!adress.equals(Config.GS_ADDRESS)) {
+            LOGGER.warn(adress + " try to connect to bot server. Connection drop.");
             ctx.close();
             return;
         }*/
@@ -47,7 +48,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
         ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(
                 (GenericFutureListener<Future<Channel>>) future -> {
                     activeChannel = future.get();
-                    LOGGER.info("Successfully connected to " + remoteAddress);
+                    LOGGER.info("Successfully connected to " + adress);
                 });
     }
 
@@ -62,7 +63,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        LOGGER.warn("Game server " + ctx.channel().remoteAddress() + " was shutdown.");
+        LOGGER.warn("Game server " + ctx.channel().localAddress() + " was shutdown.");
         TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warning! Game server was shutdown!");
         activeChannel = null;
     }
