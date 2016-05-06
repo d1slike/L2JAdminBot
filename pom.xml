@@ -7,11 +7,12 @@
     <groupId>disdev</groupId>
     <artifactId>L2JAdminBot</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>game_server_side</module>
-    </modules>
 
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
+
+    <properties>
+        <jarfile>${artifactId}-${version}.jar</jarfile>
+    </properties>
 
     <repositories>
         <repository>
@@ -41,10 +42,14 @@
             <artifactId>log4j-core</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>properties</groupId>
+            <artifactId>cfg_anzo</artifactId>
+            <version>1</version>
+        </dependency>
     </dependencies>
 
     <build>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -60,17 +65,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
+                    <outputDirectory>target/dist</outputDirectory>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <mainClass>ru.disdev.TelegramBotHolder</mainClass>
-                            <classpathPrefix>dependency-jars/</classpathPrefix>
+                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
 
-            <!-- Copy project dependency -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -83,12 +88,53 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>target/dependency-jars/</outputDirectory>
+                            <outputDirectory>target/dist/lib/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/dist/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>additional</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>*.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-startfiles</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/dist</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>additional</directory>
+                                    <filtering>true</filtering>
+                                    <exclude>*.properties</exclude>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
