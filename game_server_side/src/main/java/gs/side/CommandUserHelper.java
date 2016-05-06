@@ -17,7 +17,7 @@ public class CommandUserHelper {
         map.forEach((s, abstractRequest) -> {
             Request annotation = abstractRequest.getClass().getAnnotation(Request.class);
             String description = annotation.description();
-            StringBuilder argInfoBuilder = new StringBuilder();
+            StringBuilder argInfoBuilder = new StringBuilder().append(" ");
             Stream.of(annotation.format()).forEach(s1 -> argInfoBuilder.append(s1).append(" "));
             String argInfo = argInfoBuilder.toString();
             infoBuilder.append("/").append(s)
