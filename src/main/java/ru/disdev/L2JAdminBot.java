@@ -11,8 +11,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import ru.disdev.network.GSCommunicator;
 import ru.disdev.network.objects.MessagePacket;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Created by Dislike on 03.05.2016.
@@ -22,12 +22,12 @@ public class L2JAdminBot extends TelegramLongPollingBot {
     private static final Logger LOGGER = LogManager.getLogger(L2JAdminBot.class);
     private static final int CHAT_ID_TO_ANNOUNCE_TO_ALL = -7;
 
-    private final List<Long> activeChats;
+    private final Set<Long> activeChats;
     private GSCommunicator communicator;
 
     public L2JAdminBot(final GSCommunicator communicator) {
         this.communicator = communicator;
-        activeChats = new CopyOnWriteArrayList<>();
+        activeChats = new CopyOnWriteArraySet<>();
     }
 
     @Override
