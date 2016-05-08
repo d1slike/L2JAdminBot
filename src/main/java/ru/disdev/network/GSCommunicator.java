@@ -27,13 +27,11 @@ public class GSCommunicator {
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
-    private final MessageHandler messageHandler;
     private final ServerBootstrap serverBootstrap;
 
     public GSCommunicator() {
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-        messageHandler = new MessageHandler();
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         try {
             SelfSignedCertificate selfSignedCertificate = new SelfSignedCertificate();
@@ -46,7 +44,7 @@ public class GSCommunicator {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             channelPipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
-                            channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), messageHandler);
+                            channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), MessageHandler.getInstance());
                         }
                     });
 
@@ -62,7 +60,7 @@ public class GSCommunicator {
     }
 
     public void sendMessageToGameServer(MessagePacket messagePacket) {
-        messageHandler.writeMessage(messagePacket);
+        MessageHandler.getInstance().writeMessage(messagePacket);
     }
 
     public void start() {
