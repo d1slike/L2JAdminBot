@@ -66,7 +66,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
         if (cause instanceof SSLException)
             LOGGER.warn("Insecure connection: " + ctx.channel().localAddress());
-        if (cause instanceof IOException) {
+        else if (cause instanceof IOException) {
             LOGGER.warn("Server was shutdown abnormally: " + ctx.channel().localAddress());
             TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown abnormally.");
         } else

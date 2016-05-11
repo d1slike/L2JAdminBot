@@ -8,9 +8,13 @@ import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import ru.disdev.handler.Request;
+import ru.disdev.handler.RequestHolder;
+import ru.disdev.handler.impl.AbstractRequest;
 import ru.disdev.network.GSCommunicator;
 import ru.disdev.network.objects.MessagePacket;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -23,11 +27,13 @@ public class L2JAdminBot extends TelegramLongPollingBot {
     private static final int CHAT_ID_TO_ANNOUNCE_TO_ALL = -7;
 
     private final Set<Long> activeChats;
+    private final Set<Long> muteChatList;
     private GSCommunicator communicator;
 
     public L2JAdminBot(final GSCommunicator communicator) {
         this.communicator = communicator;
         activeChats = new CopyOnWriteArraySet<>();
+        muteChatList = new CopyOnWriteArraySet<>();
     }
 
     @Override
@@ -40,19 +46,18 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         final int userId = user.getId();
         String log;
         if (accept(userId)) {
-            activeChats.add(message.getChatId());
-            String text = message.getText();
+            final long chatId = message.getChatId();
+            activeChats.add(chatId);
+            final String text = message.getText();
             log = String.format("Message(%s) received from user(%s %s) with id %d",
                     text,
                     user.getFirstName(),
                     user.getLastName(),
                     userId
             );
-            if (text.startsWith("/")) {
-                if (communicator != null)
-                    communicator.sendMessageToGameServer(new MessagePacket(message.getChatId(), text.substring(1)));
-            } else
-                sendMessageToUser(message.getChatId(), "Command should start from '/'. Use /help to look to all commands.");
+            String answer = handleMessage(chatId, text);
+            if (answer != null)
+                sendMessageToUser(chatId, answer);
         } else {
             log = String.format("User(%d,%s,%s) with message(%s) try to communicate with bot but he is not in list.",
                     userId,
@@ -64,6 +69,21 @@ public class L2JAdminBot extends TelegramLongPollingBot {
 
         LOGGER.info(log);
 
+    }
+
+    private String handleMessage(long chatId, String message) {
+        if (message.startsWith("/")) {
+            final String command = message.substring(1);
+            Optional<AbstractRequest> request = RequestHolder.getInstance().get(command);
+            if (request.isPresent())
+                return request.get().execute(chatId, command);
+            else {
+                if (communicator != null)
+                    communicator.sendMessageToGameServer(new MessagePacket(chatId, command));
+                return null;
+            }
+        } else
+            return "Command should start from '/'. Use /help to look to all commands.";
     }
 
     @Override
@@ -85,13 +105,21 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         return false;
     }
 
+    public boolean addChatToMuteList(long chatId) {
+        return muteChatList.add(chatId);
+    }
+
+    public boolean removeChatFromMuteList(long chatId) {
+        return muteChatList.remove(chatId);
+    }
+
     @Override
     public String getBotToken() {
         return Config.TOKEN;
     }
 
     public void sendMessageToAllActiveUser(String message) {
-        activeChats.forEach(chatId -> send(chatId, message));
+        activeChats.stream().filter(chatId -> !muteChatList.contains(chatId)).forEach(chatId -> send(chatId, message));
     }
 
     private void send(Long chatId, String message) {

@@ -10,11 +10,12 @@ import ru.disdev.network.GSCommunicator;
 public class TelegramBotHolder {
 
     private static L2JAdminBot l2JAdminBot;
+    private static GSCommunicator communicator;
 
     public static void main(String... args) {
         Config.load();
         TelegramBotsApi botsApi = new TelegramBotsApi();
-        GSCommunicator communicator = new GSCommunicator();
+        communicator = new GSCommunicator();
         l2JAdminBot = new L2JAdminBot(communicator);
         try {
             botsApi.registerBot(l2JAdminBot);
@@ -22,6 +23,10 @@ public class TelegramBotHolder {
             e.printStackTrace();
         }
         communicator.start();
+    }
+
+    public static GSCommunicator getGSCommunicator() {
+        return communicator;
     }
 
     public static L2JAdminBot getL2JAdminBot() {
