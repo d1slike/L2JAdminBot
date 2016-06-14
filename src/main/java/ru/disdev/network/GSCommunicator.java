@@ -7,15 +7,16 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.handler.ssl.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.Config;
 import ru.disdev.network.objects.MessageDecoder;
 import ru.disdev.network.objects.MessageEncoder;
 import ru.disdev.network.objects.MessagePacket;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -34,16 +35,20 @@ public class GSCommunicator {
         workerGroup = new NioEventLoopGroup();
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         try {
-            SelfSignedCertificate selfSignedCertificate = new SelfSignedCertificate();
-            SslContext sslContext = SslContextBuilder.forServer(selfSignedCertificate.certificate(),
-                    selfSignedCertificate.privateKey()).build();
+            SslContext sslContext = SslContextBuilder
+                    .forClient()
+                    .keyManager(new File("ssl/cert.pem"), new File("ssl/key_1.pem"))
+                    .trustManager(new File("ssl/cert.pem")).build();
             serverBootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
-                            channelPipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
+                            SslHandler handler = sslContext.newHandler(socketChannel.alloc());
+                            handler.setHandshakeTimeout(3, TimeUnit.SECONDS);
+                            handler.setCloseNotifyTimeout(1, TimeUnit.SECONDS);
+                            channelPipeline.addFirst(handler);
                             channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), MessageHandler.getInstance());
                         }
                     });

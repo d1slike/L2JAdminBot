@@ -45,9 +45,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
             ctx.close();
             return;
         }
-
         String adress = ctx.channel().localAddress().toString();
-
         /*if (!adress.equals(Config.GS_ADDRESS)) {
             LOGGER.warn(adress + " try to connect to bot server. Connection drop.");
             ctx.close();
@@ -56,35 +54,45 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
         ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(
                 (GenericFutureListener<Future<Channel>>) future -> {
-                    activeChannel = future.get();
-                    LOGGER.info("Successfully connected to " + adress);
+                    if (future.isSuccess()) {
+                        activeChannel = future.get();
+                        LOGGER.info("Successfully connected to " + adress);
+                    } else
+                        ctx.close();
+
                 });
+
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 
-        if (cause instanceof SSLException)
-            LOGGER.warn("Insecure connection: " + ctx.channel().localAddress());
-        else if (cause instanceof IOException) {
-            LOGGER.warn("Server was shutdown abnormally: " + ctx.channel().localAddress());
-            TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown abnormally.");
-        } else
-            LOGGER.error("Critical error! Connection will close.", cause);
+        final boolean isActiveChannel = resetActiveChannelIfEqualWith(ctx.channel());
 
-        resetActiveChannelIfEqualWtih(ctx.channel());
+        try {
+            throw new Exception(cause);
+        } catch (SSLException ex) {
+            LOGGER.warn("Insecure connection: " + ctx.channel().localAddress());
+        } catch (IOException ex) {
+            LOGGER.warn("Server was shutdown abnormally: " + ctx.channel().localAddress());
+            if (isActiveChannel)
+                TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown abnormally.");
+        } catch (Exception ex) {
+            LOGGER.error("Critical error! Connection will close.", cause);
+        }
+
         ctx.close();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (resetActiveChannelIfEqualWtih(ctx.channel())) {
+        if (resetActiveChannelIfEqualWith(ctx.channel())) {
             TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown.");
             LOGGER.warn("Disconnection with gs: " + activeChannel.localAddress());
         }
     }
 
-    private boolean resetActiveChannelIfEqualWtih(Channel channel) {
+    private boolean resetActiveChannelIfEqualWith(Channel channel) {
         boolean equal = activeChannel != null && activeChannel.equals(channel);
         if (equal)
             activeChannel = null;
