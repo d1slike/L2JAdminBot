@@ -10,8 +10,8 @@ import ru.disdev.handler.Request;
 @Request(command = "unmute", description = "Remove from mute list")
 public class Unmute extends AbstractRequest {
     @Override
-    public String handle(long chatId, CommandArgs args) {
-        boolean success = TelegramBotHolder.getL2JAdminBot().removeChatFromMuteList(chatId);
+    public String handle(int userId, CommandArgs args) {
+        boolean success = TelegramBotHolder.getL2JAdminBot().removeChatFromMuteList(userId);
         return success ? "You was successfully removed from mute list." : "You are not in mute list.";
     }
 }

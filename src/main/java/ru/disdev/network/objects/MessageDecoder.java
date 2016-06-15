@@ -12,10 +12,10 @@ import java.util.List;
 public class MessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        long chatId = in.readLong();
+        int userId = in.readInt();
         byte[] messageInBytes = new byte[in.readableBytes()];
         in.readBytes(messageInBytes);
         String message = new String(messageInBytes, "UTF-8");
-        out.add(new MessagePacket(chatId, message));
+        out.add(new MessagePacket(userId, message));
     }
 }

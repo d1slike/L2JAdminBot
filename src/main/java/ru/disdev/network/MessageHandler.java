@@ -34,7 +34,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, MessagePacket packet) throws Exception {
-        TelegramBotHolder.getL2JAdminBot().sendMessageToUser(packet.getChatId(), packet.getMessage());
+        TelegramBotHolder.getL2JAdminBot().sendMessageToUserById(packet.getUserId(), packet.getMessage());
         LOGGER.info(String.format("Message(%s) received from gs(%s)", packet, channelHandlerContext.channel().localAddress()));
     }
 

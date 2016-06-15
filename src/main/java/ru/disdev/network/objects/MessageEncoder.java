@@ -11,6 +11,6 @@ public class MessageEncoder extends MessageToByteEncoder<MessagePacket> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, MessagePacket msg, ByteBuf out) throws Exception {
-        out.writeLong(msg.getChatId()).writeBytes(msg.getMessageInByte());
+        out.writeInt(msg.getUserId()).writeBytes(msg.getMessageInByte());
     }
 }

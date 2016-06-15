@@ -6,12 +6,12 @@ import java.io.UnsupportedEncodingException;
  * Created by DisDev on 05.05.2016.
  */
 public class MessagePacket {
-    private final long chatId;
+    private final int userId;
     private final String message;
     private byte[] messageInByte = {};
 
-    public MessagePacket(long chatId, String message) {
-        this.chatId = chatId;
+    public MessagePacket(int userId, String message) {
+        this.userId = userId;
         this.message = message;
         try {
             messageInByte = message.getBytes("UTF-8");
@@ -20,8 +20,8 @@ public class MessagePacket {
         }
     }
 
-    public long getChatId() {
-        return chatId;
+    public int getUserId() {
+        return userId;
     }
 
     public String getMessage() {
@@ -34,6 +34,6 @@ public class MessagePacket {
 
     @Override
     public String toString() {
-        return chatId + ": " + message;
+        return userId + ": " + message;
     }
 }

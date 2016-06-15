@@ -14,8 +14,8 @@ import ru.disdev.network.objects.MessagePacket;
 public class Help extends AbstractRequest {
 
     @Override
-    public String handle(long chatId, CommandArgs args) {
-        TelegramBotHolder.getGSCommunicator().sendMessageToGameServer(new MessagePacket(chatId, "help"));
+    public String handle(int userId, CommandArgs args) {
+        TelegramBotHolder.getGSCommunicator().sendMessageToGameServer(new MessagePacket(userId, "help"));
         return CommandUserHelper.getInfo();
     }
 }

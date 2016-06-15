@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractRequest {
 
-    public final String execute(long chatId, String fullCommand) {
+    public final String execute(int userId, String fullCommand) {
 
         Request requestAnnotation = getClass().getAnnotation(Request.class);
 
@@ -32,7 +32,7 @@ public abstract class AbstractRequest {
             return stringBuilder.toString();
         }
 
-        return handle(chatId, createCommandArgs(requestFormat, args));
+        return handle(userId, createCommandArgs(requestFormat, args));
 
     }
 
@@ -44,7 +44,7 @@ public abstract class AbstractRequest {
         return new CommandArgs(map);
     }
 
-    public abstract String handle(long chatId, CommandArgs args);
+    public abstract String handle(int userId, CommandArgs args);
 
 
 }
