@@ -24,14 +24,6 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
     private static final Logger LOGGER = LogManager.getLogger(MessageHandler.class);
 
-    private static final MessageHandler instance = new MessageHandler();
-
-    public static MessageHandler getInstance() {
-        return instance;
-    }
-
-    private Channel activeChannel;
-
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, MessagePacket packet) throws Exception {
         TelegramBotHolder.getL2JAdminBot().sendMessageToUserById(packet.getUserId(), packet.getMessage());
@@ -40,8 +32,8 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if (activeChannel != null) {
-            LOGGER.warn(ctx.channel().localAddress() + " trying to connect. But handler already has active channel " + activeChannel.localAddress());
+        if (GSCommunicator.getInstance().hasActiveChannel()) {
+            LOGGER.warn(ctx.channel().localAddress() + " trying to connect. But handler already has active channel " + GSCommunicator.getInstance().getActiveChannel().localAddress());
             ctx.close();
             return;
         }
@@ -55,7 +47,8 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
         ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(
                 (GenericFutureListener<Future<Channel>>) future -> {
                     if (future.isSuccess()) {
-                        activeChannel = future.get();
+                        //activeChannel = future.get();
+                        GSCommunicator.getInstance().setActiveChannel(future.get());
                         LOGGER.info("Successfully connected to " + adress);
                     } else
                         ctx.close();
@@ -69,15 +62,13 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
 
         final boolean isActiveChannel = resetActiveChannelIfEqualWith(ctx.channel());
 
-        try {
-            throw new Exception(cause);
-        } catch (SSLException ex) {
+        if (cause instanceof SSLException) {
             LOGGER.warn("Insecure connection: " + ctx.channel().localAddress());
-        } catch (IOException ex) {
+        } else if (cause instanceof IOException) {
             LOGGER.warn("Server was shutdown abnormally: " + ctx.channel().localAddress());
             if (isActiveChannel)
                 TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown abnormally.");
-        } catch (Exception ex) {
+        } else {
             LOGGER.error("Critical error! Connection will close.", cause);
         }
 
@@ -88,23 +79,16 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (resetActiveChannelIfEqualWith(ctx.channel())) {
             TelegramBotHolder.getL2JAdminBot().sendMessageToAllActiveUser("Warn! Server was shutdown.");
-            LOGGER.warn("Disconnection with gs: " + activeChannel.localAddress());
+            LOGGER.warn("Disconnection with gs: " + ctx.channel().localAddress());
         }
     }
 
     private boolean resetActiveChannelIfEqualWith(Channel channel) {
-        boolean equal = activeChannel != null && activeChannel.equals(channel);
+        final GSCommunicator communicator = GSCommunicator.getInstance();
+        boolean equal = communicator.hasActiveChannel() && communicator.getActiveChannel().equals(channel);
         if (equal)
-            activeChannel = null;
+            communicator.setActiveChannel(null);
         return equal;
     }
-
-    public void writeMessage(MessagePacket messagePacket) {
-        if (activeChannel != null)
-            activeChannel.writeAndFlush(messagePacket);
-        else
-            LOGGER.warn("Not channel to send message!");
-    }
-
 
 }

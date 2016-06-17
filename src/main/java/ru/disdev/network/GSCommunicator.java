@@ -1,6 +1,7 @@
 package ru.disdev.network;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
@@ -16,7 +17,6 @@ import ru.disdev.network.objects.MessageEncoder;
 import ru.disdev.network.objects.MessagePacket;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -25,12 +25,15 @@ import java.util.concurrent.TimeUnit;
 public class GSCommunicator {
 
     private static final Logger LOGGER = LogManager.getLogger(GSCommunicator.class);
+    private static final MessageEncoder ENCODER = new MessageEncoder();
+    private static final MessageDecoder DECODER = new MessageDecoder();
+    private static final MessageHandler HANDLER = new MessageHandler();
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
-    private final ServerBootstrap serverBootstrap;
+    private Channel activeChannel;
 
-    public GSCommunicator() {
+    private GSCommunicator() {
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -46,17 +49,21 @@ public class GSCommunicator {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             SslHandler handler = sslContext.newHandler(socketChannel.alloc());
-                            handler.setHandshakeTimeout(3, TimeUnit.SECONDS);
-                            handler.setCloseNotifyTimeout(1, TimeUnit.SECONDS);
-                            channelPipeline.addFirst(handler);
-                            channelPipeline.addLast(new MessageEncoder(), new MessageDecoder(), MessageHandler.getInstance());
+                            channelPipeline.addLast(handler);
+                            channelPipeline.addLast(ENCODER, DECODER, HANDLER);
                         }
                     });
 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        this.serverBootstrap = serverBootstrap;
+
+        serverBootstrap.bind(Config.BOT_PORT).addListener(future -> {
+            if (future.cause() == null)
+                LOGGER.info("BotServer is up. Listening gameserver...");
+            else
+                LOGGER.error("Error while binding bot server", future.cause());
+        });
     }
 
     public void shutdown() {
@@ -65,16 +72,31 @@ public class GSCommunicator {
     }
 
     public void sendMessageToGameServer(MessagePacket messagePacket) {
-        MessageHandler.getInstance().writeMessage(messagePacket);
+        if (!hasActiveChannel()) {
+            LOGGER.warn("Not channel to send message!");
+            return;
+        }
+        activeChannel.writeAndFlush(messagePacket);
     }
 
-    public void start() {
-        //InetSocketAddress address = new InetSocketAddress(Config.BOT_HOST, Config.BOT_PORT);
-        serverBootstrap.bind(Config.BOT_PORT).addListener(future -> {
-            if (future.cause() == null)
-                LOGGER.info("BotServer is up. Listening gameserver...");
-            else
-                LOGGER.error("Error while binding bot server", future.cause());
-        });
+
+    Channel getActiveChannel() {
+        return activeChannel;
+    }
+
+    boolean hasActiveChannel() {
+        return getActiveChannel() != null;
+    }
+
+    void setActiveChannel(Channel activeChannel) {
+        this.activeChannel = activeChannel;
+    }
+
+    private static class SingletonHolder {
+        private static final GSCommunicator GS_COMMUNICATOR = new GSCommunicator();
+    }
+
+    public static GSCommunicator getInstance() {
+        return SingletonHolder.GS_COMMUNICATOR;
     }
 }
