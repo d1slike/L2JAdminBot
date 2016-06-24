@@ -77,8 +77,9 @@ public class L2JAdminBot extends TelegramLongPollingBot {
             if (request.isPresent())
                 return request.get().execute(userId, command);
             else {
-                if (TelegramBotHolder.getGSCommunicator() != null)
-                    TelegramBotHolder.getGSCommunicator().sendMessageToGameServer(new MessagePacket(userId, command));
+                /*if (TelegramBotHolder.getGSCommunicator() != null)
+                    TelegramBotHolder.getGSCommunicator().sendMessageToGameServer(new MessagePacket(userId, command));*/
+                GSCommunicator.getInstance().sendMessageToGameServer(new MessagePacket(userId, command));
                 return null;
             }
         } else

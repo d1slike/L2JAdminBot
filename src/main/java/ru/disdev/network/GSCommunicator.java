@@ -92,6 +92,12 @@ public class GSCommunicator {
         this.activeChannel = activeChannel;
     }
 
+    public String getStatus() {
+        if (hasActiveChannel())
+            return "Connected to: " + getActiveChannel().localAddress();
+        return "Not connected";
+    }
+
     private static class SingletonHolder {
         private static final GSCommunicator GS_COMMUNICATOR = new GSCommunicator();
     }

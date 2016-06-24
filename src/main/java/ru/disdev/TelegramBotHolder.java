@@ -23,10 +23,6 @@ public class TelegramBotHolder {
         }
     }
 
-    public static GSCommunicator getGSCommunicator() {
-        return GSCommunicator.getInstance();
-    }
-
     public static L2JAdminBot getL2JAdminBot() {
         return l2JAdminBot;
     }
