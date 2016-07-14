@@ -25,9 +25,6 @@ import java.io.File;
 public class GSCommunicator {
 
     private static final Logger LOGGER = LogManager.getLogger(GSCommunicator.class);
-    private static final MessageEncoder ENCODER = new MessageEncoder();
-    private static final MessageDecoder DECODER = new MessageDecoder();
-    private static final MessageHandler HANDLER = new MessageHandler();
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
@@ -50,7 +47,7 @@ public class GSCommunicator {
                             ChannelPipeline channelPipeline = socketChannel.pipeline();
                             SslHandler handler = sslContext.newHandler(socketChannel.alloc());
                             channelPipeline.addLast(handler);
-                            channelPipeline.addLast(ENCODER, DECODER, HANDLER);
+                            channelPipeline.addLast(new MessageDecoder(), new MessageEncoder(), new MessageHandler());
                         }
                     });
 
