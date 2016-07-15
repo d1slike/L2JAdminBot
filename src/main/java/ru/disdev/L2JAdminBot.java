@@ -11,7 +11,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import ru.disdev.handler.RequestHolder;
 import ru.disdev.handler.impl.AbstractRequest;
 import ru.disdev.network.GSCommunicator;
-import ru.disdev.network.objects.MessagePacket;
+import ru.disdev.network.packets.ChatMessagePacket;
+import ru.disdev.network.packets.MessagePacket;
 
 import java.util.Map;
 import java.util.Optional;
@@ -29,10 +30,12 @@ public class L2JAdminBot extends TelegramLongPollingBot {
 
     private final Map<Integer, Long> activeChats;
     private final Set<Long> muteChatList;
+    private final Set<Long> gameChatSubscribers;
 
     public L2JAdminBot() {
         activeChats = new ConcurrentHashMap<>();
         muteChatList = new CopyOnWriteArraySet<>();
+        gameChatSubscribers = new CopyOnWriteArraySet<>();
     }
 
     @Override
@@ -95,7 +98,7 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         if (userId == USER_ID_TO_ANNOUNCE_TO_ALL)
             sendMessageToAllActiveUser(message);
         else
-            send(userId, message);
+            send(activeChats.get(userId), message);
     }
 
     private boolean accept(int userId) {
@@ -105,12 +108,25 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         return false;
     }
 
-    public boolean addChatToMuteList(long chatId) {
-        return muteChatList.add(chatId);
+    public boolean addChatToMuteList(int userId) {
+        return muteChatList.add(activeChats.get(userId));
     }
 
-    public boolean removeChatFromMuteList(long chatId) {
-        return muteChatList.remove(chatId);
+    public boolean removeChatFromMuteList(int userId) {
+        return muteChatList.remove(activeChats.get(userId));
+    }
+
+    public boolean addGameChatSubscriber(int userId) {
+        return gameChatSubscribers.add(activeChats.get(userId));
+    }
+
+    public boolean removeGameChatSubscriber(int userId) {
+        return gameChatSubscribers.remove(activeChats.get(userId));
+    }
+
+    public void sendGameChatMessage(ChatMessagePacket packet) {
+        final String message = packet.toString();
+        gameChatSubscribers.forEach(chatId -> send(chatId, message));
     }
 
     @Override
@@ -122,15 +138,15 @@ public class L2JAdminBot extends TelegramLongPollingBot {
         //activeChats.stream().filter(chatId -> !muteChatList.contains(chatId)).forEach(chatId -> send(chatId, message));
         activeChats.forEach((userId, chatId) -> {
             if (!muteChatList.contains(chatId))
-                send(userId, message);
+                send(chatId, message);
         });
     }
 
-    private void send(Integer userId, String message) {
-        if (!activeChats.containsKey(userId))
+    private void send(Long chatId, String message) {
+        if (!activeChats.containsValue(chatId))
             return;
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(activeChats.get(userId).toString());
+        sendMessage.setChatId(chatId.toString());
         sendMessage.enableMarkdown(true);
         sendMessage.setText(message);
         try {

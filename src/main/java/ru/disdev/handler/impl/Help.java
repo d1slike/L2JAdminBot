@@ -1,12 +1,11 @@
 package ru.disdev.handler.impl;
 
 
-import ru.disdev.TelegramBotHolder;
 import ru.disdev.handler.CommandArgs;
 import ru.disdev.handler.CommandUserHelper;
 import ru.disdev.handler.Request;
 import ru.disdev.network.GSCommunicator;
-import ru.disdev.network.objects.MessagePacket;
+import ru.disdev.network.packets.MessagePacket;
 
 /**
  * Created by Dislike on 03.05.2016.

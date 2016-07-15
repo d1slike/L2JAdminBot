@@ -10,7 +10,9 @@ import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.TelegramBotHolder;
-import ru.disdev.network.objects.MessagePacket;
+import ru.disdev.network.packets.ChatMessagePacket;
+import ru.disdev.network.packets.MessagePacket;
+import ru.disdev.network.packets.Packet;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -20,15 +22,10 @@ import java.io.IOException;
  * Created by DisDev on 04.05.2016.
  */
 @ChannelHandler.Sharable
-public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
+public class MessageHandler extends SimpleChannelInboundHandler<Packet> {
 
     private static final Logger LOGGER = LogManager.getLogger(MessageHandler.class);
 
-    @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, MessagePacket packet) throws Exception {
-        TelegramBotHolder.getL2JAdminBot().sendMessageToUserById(packet.getUserId(), packet.getMessage());
-        LOGGER.info(String.format("Message(%s) received from gs(%s)", packet, channelHandlerContext.channel().localAddress()));
-    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -91,4 +88,24 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessagePacket> {
         return equal;
     }
 
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, Packet msg) throws Exception {
+        boolean needLog = false;
+        switch (msg.key()) {
+            case MessagePacket.KEY: {
+                MessagePacket packet = (MessagePacket) msg;
+                needLog = true;
+                TelegramBotHolder.getL2JAdminBot().sendMessageToUserById(packet.getUserId(), packet.getMessage());
+                break;
+            }
+            case ChatMessagePacket.KEY: {
+                ChatMessagePacket packet = (ChatMessagePacket) msg;
+                TelegramBotHolder.getL2JAdminBot().sendGameChatMessage(packet);
+                break;
+            }
+        }
+        if (needLog)
+            LOGGER.info(String.format("Packet received from %s, (%s)", ctx.channel().localAddress(), msg));
+
+    }
 }

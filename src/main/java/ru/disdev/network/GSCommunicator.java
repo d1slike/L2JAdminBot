@@ -12,9 +12,9 @@ import io.netty.handler.ssl.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.disdev.Config;
-import ru.disdev.network.objects.MessageDecoder;
-import ru.disdev.network.objects.MessageEncoder;
-import ru.disdev.network.objects.MessagePacket;
+import ru.disdev.network.handlers.MessageDecoder;
+import ru.disdev.network.handlers.MessageEncoder;
+import ru.disdev.network.packets.MessagePacket;
 
 import java.io.File;
 
